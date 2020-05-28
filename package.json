@@ -25,6 +25,7 @@
     "moment": "^2.25.1",
     "mongoose": "^5.9.11",
     "multer": "^1.4.2",
-    "nodemon": "^2.0.3"
+    "nodemon": "^2.0.3",
+    "react-paypal-express-checkout": "^1.0.5"
   }
 }

@@ -7,18 +7,24 @@ const { admin } = require("./../../middleware/admin");
 const { Product } = require("../../models/products");
 
 router.get("/articles_by_id", async (req, res, next) => {
-  let type = req.query.type;
-  let items = req.query.id;
-  if (type === "array") {
-    let ids = req.query.id.split(",");
-    items = [];
-    items = ids.map((item) => mongoose.Types.ObjectId(item));
+  try {
+    let type = req.query.type;
+    let items = req.query.id;
+    if (type === "array") {
+      let ids = req.query.id.split(",");
+      items = [];
+      items = ids.map((item) => mongoose.Types.ObjectId(item));
+    }
+    let articles = await Product.find({ _id: { $in: items } })
+      .populate("brand")
+      .populate("wood")
+      .exec();
+    if (articles.length > 0) {
+      return res.status(200).send(articles);
+    }
+  } catch (err) {
+    return res.status(200).send("No Article Found");
   }
-  let articles = await Product.find({ _id: { $in: items } })
-    .populate("brand")
-    .populate("wood")
-    .exec();
-  return res.status(200).send(articles);
 });
 
 router.get("/articles", async (req, res, next) => {

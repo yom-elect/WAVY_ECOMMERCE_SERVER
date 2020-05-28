@@ -10,7 +10,6 @@ const auth = async (req, res, next) => {
         isAuth: false,
         error: true,
       });
-
     req.token = token;
     req.user = response.resultUser;
     next();
