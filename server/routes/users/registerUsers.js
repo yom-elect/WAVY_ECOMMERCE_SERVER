@@ -4,11 +4,11 @@ const router = express.Router();
 const { User } = require("../../models/users");
 const { auth } = require("../../middleware/auth");
 
-router.get("/", (req, res, next) => {
+router.get("/register", (req, res, next) => {
   res.send("users endpoint");
 });
 
-router.post("/", (req, res, next) => {
+router.post("/register", (req, res, next) => {
   const user = new User(req.body);
 
   user.save((err, doc) => {
