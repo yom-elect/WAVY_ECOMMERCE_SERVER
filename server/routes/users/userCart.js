@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const async = require("async");
 
 const { auth } = require("../../middleware/auth");
 const { User } = require("../../models/users");
 const { Product } = require("../../models/products");
+const { Payment } = require("../../models/payment");
 
 router.post("/add_to_cart", auth, async (req, res, next) => {
   try {
@@ -85,6 +87,83 @@ router.get("/removeFromCart", auth, async (req, res) => {
         cart,
       });
     }
+  }
+});
+
+router.post("/successfulPurchase", auth, async (req, res, next) => {
+  const { cartDetail, paymentData } = req.body;
+  let history = [];
+  let transactionData = {};
+
+  //user history
+  cartDetail.forEach((item) => {
+    history.push({
+      dateOfPurchase: Date.now(),
+      name: item.name,
+      brand: item.brand.name,
+      id: item._id,
+      price: item.price,
+      quantity: item.quantity,
+      paymentId: paymentData.paymentID,
+    });
+  });
+
+  //PAYMENT DASH
+  transactionData.user = {
+    id: req.user._id,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    email: req.user.email,
+  };
+  transactionData.data = paymentData;
+  transactionData.product = history;
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $push: { history: history }, $set: { cart: [] } },
+      { useFindAndModify: false, new: true }
+    );
+
+    if (user) {
+      const payment = new Payment(transactionData);
+      const paymentResult = await payment.save();
+      if (paymentResult) {
+        let products = [];
+        paymentResult.product.forEach((item) => {
+          products.push({
+            id: item.id,
+            quantity: item.quantity,
+          });
+        });
+        console.log(products);
+        async.eachSeries(products, async (item, callback) => {
+          const productResult = await Product.findOneAndUpdate(
+            { _id: item.id },
+            {
+              $inc: {
+                sold: item.quantity,
+              },
+            },
+            { useFindAndModify: false, new: true },
+            callback
+          );
+          if (productResult) {
+            // console.log(productResult);
+            res.status(200).json({
+              success: true,
+              cart: user.cart,
+              cartDetail: [],
+            });
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    return res.json({
+      success: false,
+      err,
+    });
   }
 });
 
