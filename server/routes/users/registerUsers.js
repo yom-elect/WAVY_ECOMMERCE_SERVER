@@ -14,12 +14,7 @@ router.post("/register", (req, res, next) => {
 
   user.save(async (err, doc) => {
     if (err) return res.json({ success: false, err });
-    const mailFeedback = await sendEmail(
-      doc.email,
-      doc.eventNames,
-      null,
-      "welcome"
-    );
+    const mailFeedback = await sendEmail(doc.email, doc.name, null, "welcome");
     if (mailFeedback.messageId) {
       res.status(200).json({
         success: true,

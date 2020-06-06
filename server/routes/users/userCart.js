@@ -8,6 +8,9 @@ const { User } = require("../../models/users");
 const { Product } = require("../../models/products");
 const { Payment } = require("../../models/payment");
 
+const SHA256 = require("crypto-js/sha256");
+const sendEmail = require("../../util/mail");
+
 router.post("/add_to_cart", auth, async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.user._id });
@@ -95,9 +98,17 @@ router.post("/successfulPurchase", auth, async (req, res, next) => {
   let history = [];
   let transactionData = {};
 
+  const date = new Date();
+  const po = `PO-${date.getSeconds()}${date.getMilliseconds()}-${SHA256(
+    req.user._id
+  )
+    .toString()
+    .substring(0, 8)}`;
+
   //user history
   cartDetail.forEach((item) => {
     history.push({
+      purchaseOrder: po,
       dateOfPurchase: Date.now(),
       name: item.name,
       brand: item.brand.name,
@@ -115,7 +126,7 @@ router.post("/successfulPurchase", auth, async (req, res, next) => {
     lastname: req.user.lastname,
     email: req.user.email,
   };
-  transactionData.data = paymentData;
+  transactionData.data = { ...paymentData, purchaseOrder: po };
   transactionData.product = history;
   try {
     const user = await User.findOneAndUpdate(
@@ -135,7 +146,7 @@ router.post("/successfulPurchase", auth, async (req, res, next) => {
             quantity: item.quantity,
           });
         });
-        console.log(products);
+        // console.log(products);
         async.eachSeries(products, async (item, callback) => {
           const productResult = await Product.findOneAndUpdate(
             { _id: item.id },
@@ -149,11 +160,27 @@ router.post("/successfulPurchase", auth, async (req, res, next) => {
           );
           if (productResult) {
             // console.log(productResult);
-            res.status(200).json({
-              success: true,
-              cart: user.cart,
-              cartDetail: [],
-            });
+            const mailFeedback = await sendEmail(
+              user.email,
+              user.name,
+              null,
+              "purchase",
+              transactionData
+            );
+            if (mailFeedback.messageId) {
+              res.status(200).json({
+                success: true,
+                cart: user.cart,
+                cartDetail: [],
+                mail: true,
+              });
+            } else {
+              res.status(200).json({
+                success: true,
+                cart: user.cart,
+                cartDetail: [],
+              });
+            }
           }
         });
       }
