@@ -86,4 +86,4 @@ const welcome = () => {
     `;
 };
 
-export default welcome;
+module.exports = welcome;

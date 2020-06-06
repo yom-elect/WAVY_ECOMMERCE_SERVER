@@ -1,9 +1,9 @@
-import { Router } from "express";
-import sendEmail from "../../util/mail";
+const { Router } = require("express");
+const sendEmail = require("../../util/mail");
 const router = Router();
 
-import { User } from "../../models/users";
-import { auth } from "../../middleware/auth";
+const { User } = require("../../models/users");
+const { auth } = require("../../middleware/auth");
 
 router.get("/register", (req, res, next) => {
   res.send("users endpoint");
@@ -54,4 +54,4 @@ router.post("/update_profile", auth, async (req, res, next) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,6 +1,6 @@
-import welcome from "./templates/welcome/welcomeTemplate";
+const welcome = require("./templates/welcome/welcomeTemplate");
 
-export const getEmailData = (to, name, token, template) => {
+const getEmailData = (to, name, token, template) => {
   let data = null;
 
   switch (template) {
@@ -19,3 +19,5 @@ export const getEmailData = (to, name, token, template) => {
 
   return data;
 };
+
+module.exports = { getEmailData };

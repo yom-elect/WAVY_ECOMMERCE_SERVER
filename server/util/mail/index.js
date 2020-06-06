@@ -1,5 +1,5 @@
-import mailer from "nodemailer";
-import { getEmailData } from "./generateEmailData";
+const mailer = require("nodemailer");
+const { getEmailData } = require("./generateEmailData");
 require("dotenv").config();
 
 const sendEmail = async (to, name, token, type) => {
@@ -23,4 +23,4 @@ const sendEmail = async (to, name, token, type) => {
   return info;
 };
 
-export default sendEmail;
+module.exports = sendEmail;
