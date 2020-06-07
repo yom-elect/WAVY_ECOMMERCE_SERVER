@@ -51,16 +51,18 @@ router.post("/login", (req, res, next) => {
 
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (!isMatch)
-          return res.json({ loginSuccess: false, message: "Wrong Password" });
+          return res.json({
+            loginSuccess: false,
+            message: "incorrect password",
+          });
       });
       const result = await user.generateToken();
       if (result.email)
         return res.cookie("w_auth", result.token).status(200).json({
           loginSuccess: true,
         });
-      res.status(400).send("error");
     } catch (err) {
-      console.log("error");
+      console.log(err);
     }
   });
 });

@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const SHA256 = require("crypto-js/sha256");
+
 require("dotenv").config();
 
 const jwtToken = (id) => {
@@ -9,4 +11,8 @@ const jwtVerify = (token) => {
   return jwt.verify(token, process.env.SECRET);
 };
 
-module.exports = { jwtToken, jwtVerify };
+const cryptoToken = () => {
+  return SHA256().toString();
+};
+
+module.exports = { jwtToken, jwtVerify, cryptoToken };
